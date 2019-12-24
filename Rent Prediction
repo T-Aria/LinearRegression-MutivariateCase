@@ -1,0 +1,66 @@
+import numpy as np
+import pandas as pd
+from mpl_toolkits import mplot3d
+import matplotlib.pyplot as plt
+import statsmodels.api as sm
+
+#loading data:
+data = pd.read_csv('data.csv')
+
+#recover data head:
+data.head()
+
+#data cleaning_detecting missing values:
+print (data['surface'])
+print (data['surface'].isnull())
+print (data['arrondissement'])
+print (data['arrondissement'].isnull())
+
+#summarizing missing values:
+print (data.isnull().sum().sum())
+
+# Replacing missing data using median:
+median = data['surface'].median()
+data['surface'].fillna(median, inplace=True)
+median = data['arrondissement'].median()
+data['arrondissement'].fillna(median, inplace=True)
+
+#checking data:
+print (data.isnull().sum().sum())
+
+#recover data
+Y = data["price"]
+X = data[['surface','arrondissement']]
+
+#OLS : Ordinary Least Squared : une méthode de regression
+estimateur = sm.OLS(Y_train,X_train).fit()
+print (estimateur.summary())
+
+#after getting the coeff of each parameter we move to:
+#price prediction functions:
+def predict_price_of_house(surface,arrondissement):
+    return 35.9342*surface-34.0576*arrondissement
+def predict_all(lst_surface, lst_arrondissement):
+    predicted_prices = []
+    for n in range(0, len(Y)):
+        predicted_prices.append(predict_price_of_house(lst_surface[n], lst_arrondissement[n]))
+    return predicted_prices
+    
+#plotting figures:
+ax = plt.axes(projection='3d')
+ax.scatter(data["price"], data["surface"], data["arrondissement"], c='b', marker='.')
+ax.set_xlabel('price')
+ax.set_ylabel('surface')
+ax.set_zlabel('arrondissement')
+fig = plt.figure()
+
+#plotting predicted prices:
+ax = plt.axes(projection='3d')
+ax.set_xlabel('price')
+ax.set_ylabel('surface')
+ax.set_zlabel('arrondissement')
+ax.scatter3D(predict_all(data["surface"], data["arrondissement"]),data["surface"], data["arrondissement"], cmap='Greens');
+plt.show()
+
+#predicting price:
+print(predict_price_of_house(46,1))
